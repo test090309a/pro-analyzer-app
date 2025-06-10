@@ -56,6 +56,46 @@ import tempfile
 import numpy as np
 import socket
 
+
+import subprocess
+import time
+import re
+
+
+# --- NGROK öffentlicher Link ---
+def start_ngrok(port=7860):
+    # Starte ngrok als Hintergrundprozess
+    ngrok = subprocess.Popen(
+        # C:\ProgramData\chocolatey\bin
+        ["C:\\ProgramData\\chocolatey\\bin\\ngrok.exe", "http", str(port)],
+        # ["C:\\ngrok\\ngrok.exe", "http", str(port)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    # Warte kurz, bis ngrok gestartet ist
+    time.sleep(2)
+    # Hole die öffentliche URL von ngrok
+    try:
+        import requests
+
+        url = None
+        for _ in range(10):
+            try:
+                tunnel_info = requests.get("http://127.0.0.1:4040/api/tunnels").json()
+                url = tunnel_info["tunnels"][0]["public_url"]
+                break
+            except Exception:
+                time.sleep(1)
+        if url:
+            print(f"\n*** Deine App ist öffentlich erreichbar unter: {url} ***\n")
+            print("Diesen Link kannst du teilen, solange dieses Fenster geöffnet ist.")
+        else:
+            print("ngrok gestartet, aber kein öffentlicher Link gefunden.")
+    except Exception as e:
+        print("ngrok gestartet, aber konnte keinen Link abrufen.", e)
+    return ngrok
+
+
 # --- 2. Konfiguration ---
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
 MODEL_NAME = "qwen2.5vl:7b"
@@ -411,6 +451,10 @@ def generate_pdf_report(chat_history, file_name="pro_analyzer_report.pdf"):
 # --- 5. Aufbau des Gradio Interfaces v2.0 ---
 
 with gr.Blocks(css=css, theme=gr.themes.Base(), title="PRO ANALYZER v2.0") as demo:
+    gr.Markdown(
+        "**Hinweis:** Die App ist öffentlich erreichbar, solange dieses Fenster geöffnet ist. Den Link findest du in der Konsole."
+    )
+
     # 0. Service-Check
     service_ok, service_error = check_ollama_service()
     if not service_ok:
@@ -615,5 +659,7 @@ with gr.Blocks(css=css, theme=gr.themes.Base(), title="PRO ANALYZER v2.0") as de
 
 # --- 7. Start ---
 if __name__ == "__main__":
+    # NGROK starten und öffentlichen Link anzeigen
+    ngrok_process = start_ngrok(port=7860)
     demo.launch()
     # demo.launch(share=True) # Der shared Link geht nicht.
