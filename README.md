@@ -1,4 +1,4 @@
-# PRO ANALYZER v2.0
+# ANALYZER v2.0
 
 Ein modernes, KI-gestütztes Analyse-Tool für visuelle Daten mit direkter Anbindung an ein lokales Ollama Vision-Modell (z. B. qwen2.5vl:7b).
 
