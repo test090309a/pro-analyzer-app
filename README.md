@@ -41,4 +41,4 @@ Die ngrok-URL wird im Terminal angezeigt.
 MIT License
 
 ---
-**Made with ❤️ and Ollama Vision AI**
+**Made with Ollama Vision AI**
